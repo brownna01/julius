@@ -183,8 +183,16 @@ int platform_file_manager_should_case_correct_file(void)
 
 int platform_file_manager_compare_filename(const char *a, const char *b)
 {
-#if _MSC_VER
-    return _mbsicmp((const unsigned char *)a, (const unsigned char *)b);
+#if _WIN32
+    wchar_t *wa = utf8_to_wchar(a);
+    wchar_t *wb = utf8_to_wchar(b);
+
+    int result = _wcsicmp(wa, wb);
+
+    free(wa);
+    free(wb);
+
+    return result;
 #else
     return strcasecmp(a, b);
 #endif
@@ -192,8 +200,16 @@ int platform_file_manager_compare_filename(const char *a, const char *b)
 
 int platform_file_manager_compare_filename_prefix(const char *filename, const char *prefix, int prefix_len)
 {
-#if _MSC_VER
-    return _mbsnicmp((const unsigned char *)filename, (const unsigned char *)prefix, prefix_len);
+#ifdef _WIN32
+    wchar_t *wfilename = utf8_to_wchar(filename);
+    wchar_t *wprefix = utf8_to_wchar(filename);
+
+    int result = _wcsnicmp(wfilename, wprefix, wcslen(wprefix));
+
+    free(wfilename);
+    free(wprefix);
+
+    return result;
 #else
     return strncasecmp(filename, prefix, prefix_len);
 #endif
